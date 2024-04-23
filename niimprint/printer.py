@@ -25,6 +25,8 @@ class InfoEnum(enum.IntEnum):
     BATTERY = 10
     DEVICESERIAL = 11
     HARDVERSION = 12
+    UNKNOWN_1 = 13
+    UNKNOWN_2 = 15
 
 
 class RequestCodeEnum(enum.IntEnum):
@@ -163,7 +165,12 @@ class PrinterClient:
         for pkt in self._encode_image(image):
             self._send(pkt)
         self.end_page_print()
-        time.sleep(0.3)  # FIXME: Check get_print_status()
+
+        while True:
+            printer_status = self.get_print_status()
+            if printer_status["idle"]:
+                break
+
         while not self.end_print():
             time.sleep(0.1)
 
@@ -336,5 +343,20 @@ class PrinterClient:
 
     def get_print_status(self):
         packet = self._transceive(RequestCodeEnum.GET_PRINT_STATUS, b"\x01", 16)
-        page, progress1, progress2 = struct.unpack(">HBB", packet.data)
-        return {"page": page, "progress1": progress1, "progress2": progress2}
+        unknown0, idle, progress1, progress2, unknown1, unknown2, error, unknown3, unknown4, unknown5 = struct.unpack(">BBBBBBBBBB", packet.data)
+
+        assert 0 <= idle <= 1, "Unexpected value received for idle"
+        return {
+            "unknown0": unknown0,
+            "idle": bool(idle),
+            "progress1": progress1,
+            "progress2": progress2,
+            "unknown1": unknown1,
+            "unknown2": unknown2,
+            "error": bool(error),
+            "error_code": error,
+            "open_paper_compartment": error == 1,
+            "unknown3": unknown3,
+            "unknown4": unknown4,
+            "unknown5": unknown5
+        }
