@@ -172,7 +172,7 @@ class PrinterClient:
                 break
 
         while not self.end_print():
-            time.sleep(0.1)
+            time.sleep(0.5)
 
     def _encode_image(self, image: Image):
         img = ImageOps.invert(image.convert("L")).convert("1")
