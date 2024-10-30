@@ -84,7 +84,7 @@ def print_cmd(model, conn, addr, density, rotate, image, verbose):
     assert model in supported_models.keys(), f"Unsupported model: {model}"
 
     if density > supported_models[model]["max_density"]:
-        logging.warning(f"{model.upper()} only supports density up to {supported_models[model]["max_density"]}")
+        logging.warning(f"{model.upper()} only supports density up to {supported_models[model]['max_density']}")
         density = 3
 
     image = Image.open(image)
@@ -100,7 +100,7 @@ def print_cmd(model, conn, addr, density, rotate, image, verbose):
     if not printer_status["idle"]:
         raise RuntimeError("Printer is busy")
     if printer_status["error"]:
-        logging.warning(f"Printer has error code {printer_status["error_code"]} set - Attempting to ignore.")
+        logging.warning(f"Printer has error code {printer_status['error_code']} set - Attempting to ignore.")
 
     printer.print_image(image, density=density)
 
